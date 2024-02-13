@@ -1,7 +1,7 @@
 package com.codewithkael.webrtcconference.ui.screens
 
 import android.Manifest
-import android.widget.Toast
+import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
@@ -17,26 +17,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.codewithkael.webrtcconference.ui.viewmodels.MainViewModel
 import com.codewithkael.webrtcconference.utils.Constants.CONFERENCE_SCREEN
 import com.codewithkael.webrtcconference.utils.Constants.DUMMY_ROOM_LIST
 
+@SuppressLint("InlinedApi")
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
     val context = LocalContext.current
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         // All permissions are granted
         if (permissions.all { it.value }) {
-            Toast.makeText(context, "shod", Toast.LENGTH_SHORT).show()
 
             //todo handle onclick later
             navController.navigate(CONFERENCE_SCREEN)
@@ -56,6 +54,7 @@ fun HomeScreen(navController: NavHostController) {
                                 arrayOf(
                                     Manifest.permission.RECORD_AUDIO,
                                     Manifest.permission.CAMERA,
+                                    Manifest.permission.POST_NOTIFICATIONS
                                 )
                             )
 
@@ -75,9 +74,3 @@ fun HomeScreen(navController: NavHostController) {
 
 }
 
-@Preview(showBackground = true)
-@Composable
-fun MainComponentPreview() {
-    val navController = rememberNavController()
-    HomeScreen(navController = navController)
-}
