@@ -11,10 +11,22 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.codewithkael.webrtcconference.MainActivity
 import com.codewithkael.webrtcconference.R
+import com.codewithkael.webrtcconference.remote.socket.MessageModel
+import com.codewithkael.webrtcconference.remote.socket.SocketClient
+import com.codewithkael.webrtcconference.remote.socket.SocketEventSender
+import com.codewithkael.webrtcprojectforrecord.utils.SocketEventListener
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
-class CallService : Service() {
+class CallService : Service(), SocketEventListener {
+
+    @Inject lateinit var socketClient: SocketClient
+    @Inject lateinit var eventSender: SocketEventSender
 
     //service section
     private lateinit var mainNotification: NotificationCompat.Builder
@@ -43,6 +55,7 @@ class CallService : Service() {
         if (isServiceRunning) {
             isServiceRunning = false
         }
+        socketClient.onStop()
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
@@ -52,7 +65,31 @@ class CallService : Service() {
             NotificationManager::class.java
         )
         createNotifications()
+        socketClient.setListener(this)
     }
+
+
+
+
+    override fun onSocketOpened() {
+        CoroutineScope(Dispatchers.IO).launch {
+            eventSender.storeUser("test")
+            delay(5000)
+            eventSender.createRoom("hello")
+            delay(5000)
+            eventSender.leaveRoom("hello")
+        }
+    }
+
+    override fun onSocketClosed() {
+    }
+
+    override fun onNewMessage(message: MessageModel) {
+
+    }
+
+
+
 
     private fun startServiceWithNotification() {
         startForeground(MAIN_NOTIFICATION_ID, mainNotification.build())
@@ -130,4 +167,6 @@ class CallService : Service() {
             context.startForegroundService(intent)
         }
     }
+
+
 }

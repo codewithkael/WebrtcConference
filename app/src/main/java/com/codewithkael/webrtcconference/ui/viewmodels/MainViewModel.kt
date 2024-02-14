@@ -15,7 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 @SuppressLint("StaticFieldLeak")
 class MainViewModel @Inject constructor(
-    private val context: Context
+    private val context: Context,
 ) : ViewModel() {
 
     private lateinit var callService: CallService

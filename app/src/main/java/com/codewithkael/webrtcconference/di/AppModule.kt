@@ -1,6 +1,7 @@
 package com.codewithkael.webrtcconference.di
 
 import android.content.Context
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,4 +14,7 @@ object AppModule {
 
     @Provides
     fun providesContext(@ApplicationContext context: Context):Context = context
+
+    @Provides
+    fun providesGson():Gson = Gson()
 }
