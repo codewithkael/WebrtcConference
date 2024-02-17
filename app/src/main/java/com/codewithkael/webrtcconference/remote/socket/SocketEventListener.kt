@@ -1,6 +1,5 @@
-package com.codewithkael.webrtcprojectforrecord.utils
+package com.codewithkael.webrtcconference.remote.socket
 
-import com.codewithkael.webrtcconference.remote.socket.MessageModel
 
 interface SocketEventListener {
     fun onNewMessage(message: MessageModel)

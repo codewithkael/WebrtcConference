@@ -12,29 +12,37 @@ import androidx.core.app.NotificationCompat
 import com.codewithkael.webrtcconference.MainActivity
 import com.codewithkael.webrtcconference.R
 import com.codewithkael.webrtcconference.remote.socket.MessageModel
+import com.codewithkael.webrtcconference.remote.socket.RoomModel
 import com.codewithkael.webrtcconference.remote.socket.SocketClient
+import com.codewithkael.webrtcconference.remote.socket.SocketEventListener
 import com.codewithkael.webrtcconference.remote.socket.SocketEventSender
-import com.codewithkael.webrtcprojectforrecord.utils.SocketEventListener
+import com.codewithkael.webrtcconference.remote.socket.SocketEvents.RoomStatus
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class CallService : Service(), SocketEventListener {
 
-    @Inject lateinit var socketClient: SocketClient
-    @Inject lateinit var eventSender: SocketEventSender
+    @Inject
+    lateinit var socketClient: SocketClient
+    @Inject
+    lateinit var eventSender: SocketEventSender
+    @Inject lateinit var gson: Gson
 
     //service section
     private lateinit var mainNotification: NotificationCompat.Builder
     private lateinit var notificationManager: NotificationManager
 
+    //state
+    val roomsState: MutableStateFlow<List<RoomModel>?> = MutableStateFlow(null)
+
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
-            when(it.action){
+            when (it.action) {
                 CallServiceActions.START.name -> handleStartService()
                 CallServiceActions.STOP.name -> handleStopService()
                 else -> Unit
@@ -44,7 +52,7 @@ class CallService : Service(), SocketEventListener {
     }
 
     private fun handleStartService() {
-        if (!isServiceRunning){
+        if (!isServiceRunning) {
             isServiceRunning = true
             //start service here
             startServiceWithNotification()
@@ -69,26 +77,26 @@ class CallService : Service(), SocketEventListener {
     }
 
 
-
-
     override fun onSocketOpened() {
-        CoroutineScope(Dispatchers.IO).launch {
-            eventSender.storeUser("test")
-            delay(5000)
-            eventSender.createRoom("hello")
-            delay(5000)
-            eventSender.leaveRoom("hello")
-        }
+        eventSender.storeUser()
     }
 
     override fun onSocketClosed() {
     }
 
     override fun onNewMessage(message: MessageModel) {
-
+        when (message.type) {
+            RoomStatus -> handleRoomStatus(message)
+            else -> Unit
+        }
     }
 
+    private fun handleRoomStatus(message: MessageModel) {
+        val type = object : TypeToken<List<RoomModel>>() {}.type
+        val rooms: List<RoomModel> =gson.fromJson(message.data.toString(), type)
 
+        roomsState.value = rooms
+    }
 
 
     private fun startServiceWithNotification() {
@@ -96,9 +104,11 @@ class CallService : Service(), SocketEventListener {
     }
 
     private val binder = LocalBinder()
+
     inner class LocalBinder : Binder() {
         fun getService(): CallService = this@CallService
     }
+
     override fun onBind(intent: Intent): IBinder {
         return binder
     }
@@ -146,7 +156,7 @@ class CallService : Service(), SocketEventListener {
             .setContentIntent(contentPendingIntent)
     }
 
-    companion object{
+    companion object {
         var isServiceRunning = false
         const val CALL_NOTIFICATION_CHANNEL_ID = "CALL_CHANNEL"
         const val MAIN_NOTIFICATION_ID = 2323
@@ -157,6 +167,7 @@ class CallService : Service(), SocketEventListener {
                 })
             }.start()
         }
+
         fun stopService(context: Context) {
             startIntent(context, Intent(context, CallService::class.java).apply {
                 action = CallServiceActions.STOP.name

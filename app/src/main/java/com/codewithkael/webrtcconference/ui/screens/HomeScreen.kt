@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -27,17 +28,18 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.codewithkael.webrtcconference.ui.viewmodels.MainViewModel
 import com.codewithkael.webrtcconference.utils.Constants.CONFERENCE_SCREEN
-import com.codewithkael.webrtcconference.utils.Constants.DUMMY_ROOM_LIST
 import com.codewithkael.webrtcconference.utils.RoomNameAlertDialog
 
 @SuppressLint("InlinedApi")
 @Composable
 fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
 
+
     val context = LocalContext.current
     val createRoomDialog = RoomNameAlertDialog(context, object :
         RoomNameAlertDialog.RoomNameDialogListener {
         override fun onCreateRoomName(roomName: String) {
+            mainViewModel.onCreateRoomClicked(roomName)
             Log.d("TAG", "onCreateRoomName: $roomName")
         }
     })
@@ -46,11 +48,12 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
     ) { permissions ->
         // All permissions are granted
         if (permissions.all { it.value }) {
-
             //todo handle onclick later
             navController.navigate(CONFERENCE_SCREEN)
         }
     }
+
+    val roomState = mainViewModel.roomsState.collectAsState()
     Column(Modifier.fillMaxWidth()) {
         Button(
             onClick = {
@@ -63,34 +66,42 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
         ) {
             Text(text = "Create Room")
         }
-        LazyColumn(Modifier.weight(15f)) {
-            items(DUMMY_ROOM_LIST) { item ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(1.dp)
-                        .border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp))
-                        .padding(5.dp)
-                        .clickable {
-                            requestPermissionLauncher.launch(
-                                arrayOf(
-                                    Manifest.permission.RECORD_AUDIO,
-                                    Manifest.permission.CAMERA,
-                                    Manifest.permission.POST_NOTIFICATIONS
-                                )
+        roomState.value?.let { roomList ->
+            Log.d("TAG", "HomeScreen: list here $roomList")
+            LazyColumn(Modifier.weight(15f)) {
+                items(items = roomList) { item ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(1.dp)
+                            .border(
+                                width = 1.dp,
+                                color = Color.Gray,
+                                shape = RoundedCornerShape(4.dp)
                             )
+                            .padding(5.dp)
+                            .clickable {
+                                requestPermissionLauncher.launch(
+                                    arrayOf(
+                                        Manifest.permission.RECORD_AUDIO,
+                                        Manifest.permission.CAMERA,
+                                        Manifest.permission.POST_NOTIFICATIONS
+                                    )
+                                )
+                                mainViewModel.onRoomClicked(item.roomName)
+                            },
+                        horizontalArrangement = Arrangement.SpaceBetween,
 
-                        },
-                    horizontalArrangement = Arrangement.SpaceBetween,
 
+                        ) {
+                        Text(text = "Room name: ${item.roomName}")
+                        Spacer(modifier = Modifier.padding(5.dp))
+                        Text(text = "Members: ${item.population}")
 
-                    ) {
-                    Text(text = "Room name: ${item.first}")
-                    Spacer(modifier = Modifier.padding(5.dp))
-                    Text(text = "Members: ${item.second}")
-
+                    }
                 }
             }
+
         }
     }
 

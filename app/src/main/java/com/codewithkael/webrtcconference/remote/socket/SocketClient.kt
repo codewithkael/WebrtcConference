@@ -1,8 +1,11 @@
 package com.codewithkael.webrtcconference.remote.socket
 
 import android.util.Log
-import com.codewithkael.webrtcprojectforrecord.utils.SocketEventListener
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import java.net.URI
@@ -29,7 +32,10 @@ class SocketClient @Inject constructor(
     private var webSocket: WebSocketClient? = null
 
     init {
-        initSocket()
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(1000)
+            initSocket()
+        }
     }
     fun initSocket() {
         //if you are using android emulator your local websocket address is going to be "ws://10.0.2.2:3000"
@@ -40,7 +46,6 @@ class SocketClient @Inject constructor(
         webSocket = object : WebSocketClient(URI("ws://10.0.2.2:3000")) {
             //        webSocket = object : WebSocketClient(URI("ws://192.168.1.3:3000")) {
             override fun onOpen(handshakedata: ServerHandshake?) {
-                Log.d(TAG, "onOpen: ")
                 socketEventListener?.onSocketOpened()
             }
 

@@ -1,37 +1,42 @@
 package com.codewithkael.webrtcconference.remote.socket
 
 import com.codewithkael.webrtcconference.remote.socket.SocketEvents.*
+import java.util.UUID
 import javax.inject.Inject
 
 class SocketEventSender @Inject constructor(
     private val socketClient: SocketClient
 ) {
 
-    private lateinit var username:String
-    private fun getCurrentUser():String = username
+    private var username = UUID.randomUUID().toString().substring(0,4)
 
-    fun storeUser(username:String) {
-        this.username = username
+    fun storeUser() {
         socketClient.sendMessageToSocket(
-            MessageModel(type = store_user,name = username)
+            MessageModel(type = StoreUser, name = username)
         )
     }
 
-    fun createRoom(roomName:String){
+    fun createRoom(roomName: String) {
         socketClient.sendMessageToSocket(
-            MessageModel(type = create_room, data = roomName, name = getCurrentUser())
+            MessageModel(type = CreateRoom, data = roomName, name = username)
         )
     }
 
-    fun joinRoom(roomName: String){
+    fun joinRoom(roomName: String) {
         socketClient.sendMessageToSocket(
-            MessageModel(type = join_room, data = roomName, name = getCurrentUser())
+            MessageModel(type = JoinRoom, data = roomName, name = username)
         )
     }
 
-    fun leaveRoom(roomName: String){
+    fun leaveRoom(roomName: String) {
         socketClient.sendMessageToSocket(
-            MessageModel(type = leave_room, data = roomName, name = getCurrentUser())
+            MessageModel(type = LeaveRoom, data = roomName, name = username)
+        )
+    }
+
+    fun leaveAllRooms() {
+        socketClient.sendMessageToSocket(
+            MessageModel(type = LeaveAllRooms,name = username)
         )
     }
 }
