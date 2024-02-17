@@ -11,9 +11,9 @@ import com.codewithkael.webrtcconference.ui.viewmodels.MainViewModel
 import com.codewithkael.webrtcconference.utils.Constants.MAIN_SCREEN
 
 @Composable
-fun ConferenceScreen(navController: NavHostController, mainViewModel: MainViewModel) {
+fun ConferenceScreen(roomId:String?,navController: NavHostController, mainViewModel: MainViewModel) {
     Column(Modifier.fillMaxSize()) {
-        Text(text = "members = user1, user2")
+        Text(text = "room name = $roomId")
     }
 
     ConfirmBackDialog{

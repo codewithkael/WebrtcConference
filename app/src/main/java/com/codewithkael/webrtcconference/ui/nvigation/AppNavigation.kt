@@ -1,13 +1,14 @@
 package com.codewithkael.webrtcconference.ui.nvigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.codewithkael.webrtcconference.ui.screens.ConferenceScreen
 import com.codewithkael.webrtcconference.ui.screens.HomeScreen
 import com.codewithkael.webrtcconference.ui.viewmodels.MainViewModel
-import com.codewithkael.webrtcconference.utils.Constants.CONFERENCE_SCREEN
 import com.codewithkael.webrtcconference.utils.Constants.MAIN_SCREEN
 
 @Composable
@@ -20,8 +21,11 @@ fun AppNavigation(mainViewModel: MainViewModel) {
                 mainViewModel = mainViewModel
             )
         }
-        composable(CONFERENCE_SCREEN) {
+        composable("ConferenceScreen/{roomName}",
+            arguments = listOf(navArgument("roomName") { type = NavType.StringType })
+        ) {
             ConferenceScreen(
+                roomId = it.arguments?.getString("roomName"),
                 navController = navController,
                 mainViewModel = mainViewModel
             )

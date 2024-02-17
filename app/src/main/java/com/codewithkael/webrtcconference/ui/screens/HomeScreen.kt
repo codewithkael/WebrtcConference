@@ -27,7 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.codewithkael.webrtcconference.ui.viewmodels.MainViewModel
-import com.codewithkael.webrtcconference.utils.Constants.CONFERENCE_SCREEN
+import com.codewithkael.webrtcconference.utils.Constants.conferenceScreen
 import com.codewithkael.webrtcconference.utils.RoomNameAlertDialog
 
 @SuppressLint("InlinedApi")
@@ -40,6 +40,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
         RoomNameAlertDialog.RoomNameDialogListener {
         override fun onCreateRoomName(roomName: String) {
             mainViewModel.onCreateRoomClicked(roomName)
+            navController.navigate(conferenceScreen(roomName))
             Log.d("TAG", "onCreateRoomName: $roomName")
         }
     })
@@ -48,8 +49,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
     ) { permissions ->
         // All permissions are granted
         if (permissions.all { it.value }) {
-            //todo handle onclick later
-            navController.navigate(CONFERENCE_SCREEN)
+            //todo move permissions to authentication page later
         }
     }
 
@@ -89,6 +89,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
                                     )
                                 )
                                 mainViewModel.onRoomClicked(item.roomName)
+                                navController.navigate(conferenceScreen(item.roomName))
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
 
