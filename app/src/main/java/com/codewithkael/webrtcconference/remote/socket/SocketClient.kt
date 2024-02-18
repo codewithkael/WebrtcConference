@@ -43,7 +43,7 @@ class SocketClient @Inject constructor(
         // and get your ethernet ipv4 , mine is : "ws://192.168.1.3:3000"
         //but if your websocket is deployed you add your websocket address here
 
-        webSocket = object : WebSocketClient(URI("ws://10.0.2.2:3000")) {
+        webSocket = object : WebSocketClient(URI("ws://164.92.142.251:6000")) {
             //        webSocket = object : WebSocketClient(URI("ws://192.168.1.3:3000")) {
             override fun onOpen(handshakedata: ServerHandshake?) {
                 socketEventListener?.onSocketOpened()
