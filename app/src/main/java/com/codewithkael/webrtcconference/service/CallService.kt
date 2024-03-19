@@ -9,7 +9,6 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import android.view.SurfaceView
 import androidx.core.app.NotificationCompat
 import com.codewithkael.webrtcconference.MainActivity
 import com.codewithkael.webrtcconference.R
@@ -24,6 +23,8 @@ import com.codewithkael.webrtcconference.remote.socket.SocketEvents.NewSession
 import com.codewithkael.webrtcconference.remote.socket.SocketEvents.Offer
 import com.codewithkael.webrtcconference.remote.socket.SocketEvents.RoomStatus
 import com.codewithkael.webrtcconference.remote.socket.SocketEvents.StartCall
+import com.codewithkael.webrtcconference.utils.MyApplication
+import com.codewithkael.webrtcconference.webrtc.LocalStreamListener
 import com.codewithkael.webrtcconference.webrtc.MyPeerObserver
 import com.codewithkael.webrtcconference.webrtc.RTCClient
 import com.codewithkael.webrtcconference.webrtc.WebRTCFactory
@@ -31,6 +32,8 @@ import com.codewithkael.webrtcconference.webrtc.WebRTCSignalListener
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.webrtc.IceCandidate
 import org.webrtc.MediaStream
@@ -58,9 +61,24 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
     //service section
     private lateinit var mainNotification: NotificationCompat.Builder
     private lateinit var notificationManager: NotificationManager
+    private val serviceScope = CoroutineScope(Dispatchers.IO)
 
     //state
     val roomsState: MutableStateFlow<List<RoomModel>?> = MutableStateFlow(null)
+    val mediaStreamsState: MutableStateFlow<HashMap<String, MediaStream>?> = MutableStateFlow(null)
+    private fun getMediaStreams() = mediaStreamsState.value ?: hashMapOf()
+    fun addMediaStreamToState(username: String,mediaStream: MediaStream){
+        getMediaStreams().apply {
+            this[username] = mediaStream
+            mediaStreamsState.value = this
+        }
+    }
+    fun removeMediaStreamFromState(username:String){
+        getMediaStreams().apply {
+            this.remove(username)
+            mediaStreamsState.value = this
+        }
+    }
 
     //connection list
     private val connections: MutableMap<String, RTCClient> = mutableMapOf()
@@ -123,8 +141,12 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
         }
     }
 
-    fun initializeSurface(view:SurfaceViewRenderer){
-        webRTCFactory.init(view)
+    fun initializeSurface(view: SurfaceViewRenderer) {
+        webRTCFactory.init(view, object : LocalStreamListener {
+            override fun onLocalStreamReady(mediaStream: MediaStream) {
+               addMediaStreamToState(MyApplication.username,mediaStream)
+            }
+        })
     }
 
     private fun handleStartCall(message: MessageModel) {
@@ -147,7 +169,9 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
 
             override fun onAddStream(p0: MediaStream?) {
                 super.onAddStream(p0)
-                //todo handle ui here
+                p0?.let {
+                    addMediaStreamToState(targetName,it)
+                }
 
             }
 

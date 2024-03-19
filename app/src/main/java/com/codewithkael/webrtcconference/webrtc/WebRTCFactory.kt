@@ -27,19 +27,20 @@ import org.webrtc.SurfaceViewRenderer
 import org.webrtc.VideoCapturer
 import org.webrtc.VideoTrack
 import javax.inject.Inject
+import javax.inject.Singleton
 
 
+@Singleton
 class WebRTCFactory @Inject constructor(
     private val context: Context,
     private val gson: Gson
 ) {
 
+    private lateinit var localStreamListener: LocalStreamListener
     private val eglBaseContext = EglBase.create().eglBaseContext
     private var permissionIntent: Intent? = null
     private lateinit var localSurfaceView: SurfaceViewRenderer
-
     private lateinit var rtcAudioManager: RTCAudioManager
-
 
     private val peerConnectionFactory by lazy { createPeerConnectionFactory() }
 
@@ -62,7 +63,9 @@ class WebRTCFactory @Inject constructor(
     private var localStream: MediaStream? = null
     private val TAG = "WebRTCFactory"
 
-    fun init(surface: SurfaceViewRenderer) {
+
+    fun init(surface: SurfaceViewRenderer,localStreamListener: LocalStreamListener) {
+        this.localStreamListener = localStreamListener
         rtcAudioManager = RTCAudioManager.create(context)
         rtcAudioManager.setDefaultAudioDevice(RTCAudioManager.AudioDevice.SPEAKER_PHONE)
         rtcAudioManager.start { selectedAudioDevice, availableAudioDevices ->
@@ -90,6 +93,14 @@ class WebRTCFactory @Inject constructor(
         startLocalVideo(view)
     }
 
+    fun initRemoteSurfaceView(view: SurfaceViewRenderer){
+        view.run {
+            setMirror(false)
+            setEnableHardwareScaler(true)
+            init(eglBaseContext, null)
+        }
+    }
+
     private fun startLocalVideo(surface: SurfaceViewRenderer) {
         val surfaceTextureHelper =
             SurfaceTextureHelper.create(Thread.currentThread().name, eglBaseContext)
@@ -98,7 +109,7 @@ class WebRTCFactory @Inject constructor(
             surfaceTextureHelper,
             surface.context, localVideoSource.capturerObserver
         )
-        videoCapturer?.startCapture(1080, 720, 30)
+        videoCapturer?.startCapture(480, 320, 10)
         localVideoTrack =
             peerConnectionFactory.createVideoTrack(localTrackId + "_video", localVideoSource)
         localVideoTrack?.addSink(surface)
@@ -108,6 +119,8 @@ class WebRTCFactory @Inject constructor(
         localStream = peerConnectionFactory.createLocalMediaStream(localStreamId)
         localStream?.addTrack(localAudioTrack)
         localStream?.addTrack(localVideoTrack)
+        localStreamListener.onLocalStreamReady(localStream!!)
+
     }
 
     private fun getVideoCapturer(): CameraVideoCapturer {

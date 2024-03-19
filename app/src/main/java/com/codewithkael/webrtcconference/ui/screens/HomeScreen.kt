@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,10 +48,22 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
+        Log.d("TAG", "HomeScreen: $permissions")
         // All permissions are granted
         if (permissions.all { it.value }) {
             //todo move permissions to authentication page later
+            mainViewModel.init()
         }
+    }
+
+    LaunchedEffect(key1 = Unit){
+        requestPermissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.CAMERA,
+                Manifest.permission.POST_NOTIFICATIONS,
+            )
+        )
     }
 
     val roomState = mainViewModel.roomsState.collectAsState()
@@ -81,13 +94,6 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
                             )
                             .padding(5.dp)
                             .clickable {
-                                requestPermissionLauncher.launch(
-                                    arrayOf(
-                                        Manifest.permission.RECORD_AUDIO,
-                                        Manifest.permission.CAMERA,
-                                        Manifest.permission.POST_NOTIFICATIONS
-                                    )
-                                )
                                 navController.navigate(conferenceScreen(item.roomName))
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,

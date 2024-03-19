@@ -12,10 +12,12 @@ import com.codewithkael.webrtcconference.remote.socket.RoomModel
 import com.codewithkael.webrtcconference.remote.socket.SocketEventSender
 import com.codewithkael.webrtcconference.service.CallService
 import com.codewithkael.webrtcconference.service.CallServiceActions
+import com.codewithkael.webrtcconference.webrtc.WebRTCFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.webrtc.MediaStream
 import org.webrtc.SurfaceViewRenderer
 import javax.inject.Inject
 
@@ -23,7 +25,8 @@ import javax.inject.Inject
 @SuppressLint("StaticFieldLeak")
 class MainViewModel @Inject constructor(
     private val context: Context,
-    private val eventSender: SocketEventSender
+    private val eventSender: SocketEventSender,
+    private val webRTCFactory: WebRTCFactory
 ) : ViewModel() {
 
     private lateinit var callService: CallService
@@ -31,6 +34,7 @@ class MainViewModel @Inject constructor(
 
     //states
     var roomsState: MutableStateFlow<List<RoomModel>?> = MutableStateFlow(null)
+    var mediaStreamsState : MutableStateFlow<HashMap<String, MediaStream>?> = MutableStateFlow(null)
 
 
     private val serviceConnection = object : ServiceConnection {
@@ -50,6 +54,9 @@ class MainViewModel @Inject constructor(
         callService.roomsState.onEach {
             roomsState.emit(it)
         }.launchIn(viewModelScope)
+        callService.mediaStreamsState.onEach {
+            mediaStreamsState.emit(it)
+        }.launchIn(viewModelScope)
     }
 
     fun onCreateRoomClicked(roomName: String) {
@@ -61,7 +68,7 @@ class MainViewModel @Inject constructor(
         eventSender.joinRoom(roomName)
     }
 
-    init {
+    fun init() {
         Intent(context, CallService::class.java).apply {
             action = CallServiceActions.START.name
         }.also { intent ->
@@ -82,6 +89,10 @@ class MainViewModel @Inject constructor(
 
     fun onLeaveConferenceClicked() {
         eventSender.leaveAllRooms()
+    }
+
+    fun initRemoteSurfaceView(view: SurfaceViewRenderer) {
+        webRTCFactory.initRemoteSurfaceView(view)
     }
 
 }
