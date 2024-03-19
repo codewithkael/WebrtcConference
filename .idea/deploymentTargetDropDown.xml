@@ -13,12 +13,12 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\Kael\.android\avd\Pixel_5_API_27.avd" />
+                  <value value="C:\Users\Kael\.android\avd\Pixel_2_API_27.avd" />
                 </Key>
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-02-18T05:52:23.920168900Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-03-18T11:47:04.406732500Z" />
         </State>
       </entry>
       <entry key="webrtc">

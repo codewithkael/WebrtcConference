@@ -1,14 +1,19 @@
 package com.codewithkael.webrtcconference.remote.socket
 
-import com.codewithkael.webrtcconference.remote.socket.SocketEvents.*
-import java.util.UUID
+import com.codewithkael.webrtcconference.remote.socket.SocketEvents.CreateRoom
+import com.codewithkael.webrtcconference.remote.socket.SocketEvents.JoinRoom
+import com.codewithkael.webrtcconference.remote.socket.SocketEvents.LeaveAllRooms
+import com.codewithkael.webrtcconference.remote.socket.SocketEvents.LeaveRoom
+import com.codewithkael.webrtcconference.remote.socket.SocketEvents.StartCall
+import com.codewithkael.webrtcconference.remote.socket.SocketEvents.StoreUser
+import com.codewithkael.webrtcconference.utils.MyApplication
 import javax.inject.Inject
 
 class SocketEventSender @Inject constructor(
     private val socketClient: SocketClient
 ) {
 
-    private var username = UUID.randomUUID().toString().substring(0,4)
+    private var username = MyApplication.username
 
     fun storeUser() {
         socketClient.sendMessageToSocket(
@@ -36,7 +41,13 @@ class SocketEventSender @Inject constructor(
 
     fun leaveAllRooms() {
         socketClient.sendMessageToSocket(
-            MessageModel(type = LeaveAllRooms,name = username)
+            MessageModel(type = LeaveAllRooms, name = username)
+        )
+    }
+
+    fun startCall(target: String) {
+        socketClient.sendMessageToSocket(
+            MessageModel(type = StartCall, name = username, target = target)
         )
     }
 }

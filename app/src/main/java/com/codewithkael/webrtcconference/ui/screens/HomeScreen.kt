@@ -88,7 +88,6 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
                                         Manifest.permission.POST_NOTIFICATIONS
                                     )
                                 )
-                                mainViewModel.onRoomClicked(item.roomName)
                                 navController.navigate(conferenceScreen(item.roomName))
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,

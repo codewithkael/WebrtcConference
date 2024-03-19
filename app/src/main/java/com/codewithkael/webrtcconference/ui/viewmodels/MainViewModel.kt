@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.webrtc.SurfaceViewRenderer
 import javax.inject.Inject
 
 @HiltViewModel
@@ -55,7 +56,8 @@ class MainViewModel @Inject constructor(
         eventSender.createRoom(roomName)
     }
 
-    fun onRoomClicked(roomName: String) {
+    fun onRoomClicked(roomName: String,view:SurfaceViewRenderer) {
+        callService.initializeSurface(view)
         eventSender.joinRoom(roomName)
     }
 
