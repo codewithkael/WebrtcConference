@@ -32,8 +32,6 @@ import com.codewithkael.webrtcconference.webrtc.WebRTCSignalListener
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.webrtc.IceCandidate
 import org.webrtc.MediaStream
@@ -61,23 +59,28 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
     //service section
     private lateinit var mainNotification: NotificationCompat.Builder
     private lateinit var notificationManager: NotificationManager
-    private val serviceScope = CoroutineScope(Dispatchers.IO)
 
     //state
     val roomsState: MutableStateFlow<List<RoomModel>?> = MutableStateFlow(null)
-    val mediaStreamsState: MutableStateFlow<HashMap<String, MediaStream>?> = MutableStateFlow(null)
-    private fun getMediaStreams() = mediaStreamsState.value ?: hashMapOf()
-    fun addMediaStreamToState(username: String,mediaStream: MediaStream){
-        getMediaStreams().apply {
-            this[username] = mediaStream
-            mediaStreamsState.value = this
+    val mediaStreamsState: MutableStateFlow<HashMap<String, MediaStream>> = MutableStateFlow(
+        hashMapOf()
+    )
+
+    private fun getMediaStreams() = mediaStreamsState.value
+    fun addMediaStreamToState(username: String, mediaStream: MediaStream) {
+        val updatedData = HashMap(getMediaStreams()).apply {
+            put(username, mediaStream)
         }
+        mediaStreamsState.value = updatedData
     }
-    fun removeMediaStreamFromState(username:String){
-        getMediaStreams().apply {
-            this.remove(username)
-            mediaStreamsState.value = this
+
+    fun removeMediaStreamFromState(username: String) {
+        val updatedData = HashMap(getMediaStreams()).apply {
+            // Remove the username if it exists
+            remove(username)
         }
+        // Update the state with the new HashMap
+        mediaStreamsState.value = updatedData
     }
 
     //connection list
@@ -144,9 +147,17 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
     fun initializeSurface(view: SurfaceViewRenderer) {
         webRTCFactory.init(view, object : LocalStreamListener {
             override fun onLocalStreamReady(mediaStream: MediaStream) {
-               addMediaStreamToState(MyApplication.username,mediaStream)
+                addMediaStreamToState(MyApplication.username, mediaStream)
             }
         })
+    }
+
+    private fun handleNewSession(message: MessageModel) {
+        message.name?.let { target ->
+            startNewConnection(target) {
+                eventSender.startCall(target)
+            }
+        }
     }
 
     private fun handleStartCall(message: MessageModel) {
@@ -168,11 +179,11 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
             }
 
             override fun onAddStream(p0: MediaStream?) {
+                Log.d("TAG", "target = $targetName onAddStream: $p0")
                 super.onAddStream(p0)
                 p0?.let {
-                    addMediaStreamToState(targetName,it)
+                    addMediaStreamToState(targetName, it)
                 }
-
             }
 
             override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
@@ -183,14 +194,6 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
             it?.let {
                 connections[targetName] = it
                 done(it)
-            }
-        }
-    }
-
-    private fun handleNewSession(message: MessageModel) {
-        message.name?.let { target ->
-            startNewConnection(target) {
-                eventSender.startCall(target)
             }
         }
     }

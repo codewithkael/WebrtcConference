@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codewithkael.webrtcconference.remote.socket.RoomModel
@@ -34,8 +35,9 @@ class MainViewModel @Inject constructor(
 
     //states
     var roomsState: MutableStateFlow<List<RoomModel>?> = MutableStateFlow(null)
-    var mediaStreamsState : MutableStateFlow<HashMap<String, MediaStream>?> = MutableStateFlow(null)
-
+    var mediaStreamsState: MutableStateFlow<HashMap<String, MediaStream>?> = MutableStateFlow(
+        hashMapOf()
+    )
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -51,11 +53,14 @@ class MainViewModel @Inject constructor(
     }
 
     private fun handleServiceBound() {
-        callService.roomsState.onEach {
-            roomsState.emit(it)
+        callService.roomsState.onEach { rooms ->
+            roomsState.emit(rooms)
         }.launchIn(viewModelScope)
-        callService.mediaStreamsState.onEach {
-            mediaStreamsState.emit(it)
+
+        callService.mediaStreamsState.onEach { mediaStreams ->
+            Log.d("TAG", "handleServiceBound: $mediaStreams")
+            // Directly propagate the state without setting a new value
+            mediaStreamsState.emit(mediaStreams)
         }.launchIn(viewModelScope)
     }
 

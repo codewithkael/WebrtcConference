@@ -44,7 +44,7 @@ class WebRTCFactory @Inject constructor(
 
     private val peerConnectionFactory by lazy { createPeerConnectionFactory() }
 
-    //    private val iceServer = listOf<PeerConnection.IceServer>()
+//        private val iceServer = listOf<PeerConnection.IceServer>()
     private val iceServer = listOf(
         PeerConnection.IceServer.builder("turn:185.246.66.75:3478").setUsername("user")
             .setPassword("password").createIceServer(),
@@ -56,7 +56,7 @@ class WebRTCFactory @Inject constructor(
     private val localAudioSource by lazy { peerConnectionFactory.createAudioSource(MediaConstraints()) }
 
     private val localTrackId = "local_track"
-    private val localStreamId = "local_stream_android"
+    private val localStreamId = "${MyApplication.username}_local_stream_android"
     private var videoCapturer: CameraVideoCapturer? = null
     private var localAudioTrack: AudioTrack? = null
     private var localVideoTrack: VideoTrack? = null
