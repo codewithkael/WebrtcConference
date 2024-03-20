@@ -76,8 +76,8 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
 
     fun removeMediaStreamFromState(username: String) {
         val updatedData = HashMap(getMediaStreams()).apply {
-            // Remove the username if it exists
             remove(username)
+            Log.d("TAG", "removeMediaStreamFromState: ${mediaStreamsState.value}")
         }
         // Update the state with the new HashMap
         mediaStreamsState.value = updatedData
@@ -111,6 +111,12 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
             isServiceRunning = false
         }
         socketClient.onStop()
+        connections.onEach {
+            runCatching {
+                it.value.onDestroy()
+            }
+        }
+        webRTCFactory.onDestroy()
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
@@ -189,6 +195,13 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
             override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
                 super.onConnectionChange(newState)
                 Log.d("TAG", "onConnectionChange: $newState")
+                if (
+                    newState == PeerConnection.PeerConnectionState.CLOSED ||
+                    newState == PeerConnection.PeerConnectionState.DISCONNECTED ||
+                    newState == PeerConnection.PeerConnectionState.FAILED
+                    ) {
+                    removeMediaStreamFromState(targetName)
+                }
             }
         }, targetName, this).also {
             it?.let {
@@ -234,6 +247,11 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
         }
     }
 
+    fun leaveRoom(){
+        connections.onEach {
+            it.value.onDestroy()
+        }
+    }
 
     private fun findClient(username: String): RTCClient? {
         return connections[username]

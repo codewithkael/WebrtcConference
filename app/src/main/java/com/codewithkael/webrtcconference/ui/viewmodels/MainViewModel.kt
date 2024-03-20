@@ -94,6 +94,7 @@ class MainViewModel @Inject constructor(
 
     fun onLeaveConferenceClicked() {
         eventSender.leaveAllRooms()
+        callService.leaveRoom()
     }
 
     fun initRemoteSurfaceView(view: SurfaceViewRenderer) {

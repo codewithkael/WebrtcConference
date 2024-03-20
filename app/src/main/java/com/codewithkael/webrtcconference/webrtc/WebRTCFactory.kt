@@ -44,7 +44,7 @@ class WebRTCFactory @Inject constructor(
 
     private val peerConnectionFactory by lazy { createPeerConnectionFactory() }
 
-//        private val iceServer = listOf<PeerConnection.IceServer>()
+    //        private val iceServer = listOf<PeerConnection.IceServer>()
     private val iceServer = listOf(
         PeerConnection.IceServer.builder("turn:185.246.66.75:3478").setUsername("user")
             .setPassword("password").createIceServer(),
@@ -64,7 +64,7 @@ class WebRTCFactory @Inject constructor(
     private val TAG = "WebRTCFactory"
 
 
-    fun init(surface: SurfaceViewRenderer,localStreamListener: LocalStreamListener) {
+    fun init(surface: SurfaceViewRenderer, localStreamListener: LocalStreamListener) {
         this.localStreamListener = localStreamListener
         rtcAudioManager = RTCAudioManager.create(context)
         rtcAudioManager.setDefaultAudioDevice(RTCAudioManager.AudioDevice.SPEAKER_PHONE)
@@ -93,7 +93,7 @@ class WebRTCFactory @Inject constructor(
         startLocalVideo(view)
     }
 
-    fun initRemoteSurfaceView(view: SurfaceViewRenderer){
+    fun initRemoteSurfaceView(view: SurfaceViewRenderer) {
         view.run {
             setMirror(false)
             setEnableHardwareScaler(true)
@@ -214,7 +214,18 @@ class WebRTCFactory @Inject constructor(
             }, observer
         )
         connection?.addStream(localStream)
-        return connection?.let { RTCClientImpl(it, MyApplication.username, target, gson, listener) }
+        return connection?.let {
+            RTCClientImpl(it, MyApplication.username, target, gson, listener) {
+                destroyProcess()
+            }
+        }
+    }
+
+    private fun destroyProcess() {
+        runCatching {
+            videoCapturer?.stopCapture()
+            videoCapturer?.dispose()
+        }
     }
 
 
