@@ -14,7 +14,8 @@ class RTCClientImpl(
     private val username:String,
     private val target: String,
     private val gson: Gson,
-    private var listener: WebRTCSignalListener? = null
+    private var listener: WebRTCSignalListener? = null,
+    private val destroyClient:()->Unit
 ) : RTCClient {
 
     private val mediaConstraint = MediaConstraints().apply {
@@ -86,5 +87,6 @@ class RTCClientImpl(
 
     override fun onDestroy() {
         connection.close()
+        destroyClient()
     }
 }
