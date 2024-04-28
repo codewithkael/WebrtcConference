@@ -1,16 +1,8 @@
 package com.codewithkael.webrtcconference.webrtc
 
 import android.content.Context
-import android.content.Intent
-import android.media.projection.MediaProjection
-import android.util.DisplayMetrics
-
-import android.view.WindowManager
 import com.codewithkael.webrtcconference.utils.MyApplication
 import com.google.gson.Gson
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.webrtc.AudioTrack
 import org.webrtc.Camera2Enumerator
 import org.webrtc.CameraVideoCapturer
@@ -21,7 +13,6 @@ import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
-import org.webrtc.ScreenCapturerAndroid
 import org.webrtc.SurfaceTextureHelper
 import org.webrtc.SurfaceViewRenderer
 import org.webrtc.VideoCapturer
