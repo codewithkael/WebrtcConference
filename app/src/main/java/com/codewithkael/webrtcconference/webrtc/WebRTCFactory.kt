@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjection
 import android.util.DisplayMetrics
-import android.util.Log
+
 import android.view.WindowManager
 import com.codewithkael.webrtcconference.utils.MyApplication
 import com.google.gson.Gson
@@ -38,18 +38,13 @@ class WebRTCFactory @Inject constructor(
 
     private lateinit var localStreamListener: LocalStreamListener
     private val eglBaseContext = EglBase.create().eglBaseContext
-    private var permissionIntent: Intent? = null
-    private lateinit var localSurfaceView: SurfaceViewRenderer
     private lateinit var rtcAudioManager: RTCAudioManager
 
     private val peerConnectionFactory by lazy { createPeerConnectionFactory() }
-
-    //        private val iceServer = listOf<PeerConnection.IceServer>()
     private val iceServer = listOf(
         PeerConnection.IceServer.builder("turn:185.246.66.75:3478").setUsername("user")
             .setPassword("password").createIceServer(),
     )
-
 
     private var screenCapturer: VideoCapturer? = null
     private val localVideoSource by lazy { peerConnectionFactory.createVideoSource(false) }
@@ -61,35 +56,23 @@ class WebRTCFactory @Inject constructor(
     private var localAudioTrack: AudioTrack? = null
     private var localVideoTrack: VideoTrack? = null
     private var localStream: MediaStream? = null
-    private val TAG = "WebRTCFactory"
 
 
     fun init(surface: SurfaceViewRenderer, localStreamListener: LocalStreamListener) {
         this.localStreamListener = localStreamListener
         rtcAudioManager = RTCAudioManager.create(context)
         rtcAudioManager.setDefaultAudioDevice(RTCAudioManager.AudioDevice.SPEAKER_PHONE)
-        rtcAudioManager.start { selectedAudioDevice, availableAudioDevices ->
-            Log.d(
-                TAG,
-                "init: selected $selectedAudioDevice  ,available ${availableAudioDevices.toList()}"
-            )
-        }
-        CoroutineScope(Dispatchers.Default).launch {
-
-            initPeerConnectionFactory(context)
-        }
-//        this.permissionIntent = permissionIntent
+        rtcAudioManager.start { _, _ -> }
+        initPeerConnectionFactory(context)
         initSurfaceView(surface)
     }
 
     private fun initSurfaceView(view: SurfaceViewRenderer) {
-        this.localSurfaceView = view
         view.run {
             setMirror(false)
             setEnableHardwareScaler(true)
             init(eglBaseContext, null)
         }
-//        startScreenCapturing(view)
         startLocalVideo(view)
     }
 
@@ -152,47 +135,6 @@ class WebRTCFactory @Inject constructor(
             disableEncryption = false
             disableNetworkMonitor = false
         }).createPeerConnectionFactory()
-    }
-
-    private fun startScreenCapturing(localSurfaceView: SurfaceViewRenderer) {
-        CoroutineScope(Dispatchers.Default).launch {
-            Log.d("TAG", "startScreenCapturing: called")
-            val displayMetrics = DisplayMetrics()
-            val windowsManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            windowsManager.defaultDisplay.getMetrics(displayMetrics)
-
-            val screenWidthPixels = displayMetrics.widthPixels
-            val screenHeightPixels = displayMetrics.heightPixels
-
-            val surfaceTextureHelper = SurfaceTextureHelper.create(
-                Thread.currentThread().name, eglBaseContext
-            )
-
-            screenCapturer = createScreenCapturer()
-            screenCapturer!!.initialize(
-                surfaceTextureHelper,
-                context,
-                localVideoSource.capturerObserver
-            )
-            screenCapturer!!.startCapture(screenWidthPixels, screenHeightPixels, 10)
-//        screenCapturer!!.startCapture(720, 1080, 10)
-
-            localVideoTrack =
-                peerConnectionFactory.createVideoTrack(localTrackId + "_video", localVideoSource)
-            localVideoTrack?.addSink(localSurfaceView)
-            localStream = peerConnectionFactory.createLocalMediaStream(localStreamId)
-            localStream?.addTrack(localVideoTrack)
-            localStream?.addTrack(localAudioTrack) // Add the audio track to the local stream
-        }
-    }
-
-    private fun createScreenCapturer(): VideoCapturer {
-        return ScreenCapturerAndroid(permissionIntent, object : MediaProjection.Callback() {
-            override fun onStop() {
-                super.onStop()
-                Log.d("TAG", "onStop: stopped screen casting permission")
-            }
-        })
     }
 
     fun onDestroy() {

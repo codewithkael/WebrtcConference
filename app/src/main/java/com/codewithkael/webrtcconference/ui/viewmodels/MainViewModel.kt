@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import android.util.Log
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codewithkael.webrtcconference.remote.socket.RoomModel
@@ -58,7 +58,6 @@ class MainViewModel @Inject constructor(
         }.launchIn(viewModelScope)
 
         callService.mediaStreamsState.onEach { mediaStreams ->
-            Log.d("TAG", "handleServiceBound: $mediaStreams")
             // Directly propagate the state without setting a new value
             mediaStreamsState.emit(mediaStreams)
         }.launchIn(viewModelScope)

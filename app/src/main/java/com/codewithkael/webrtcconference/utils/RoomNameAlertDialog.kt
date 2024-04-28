@@ -25,10 +25,10 @@ class RoomNameAlertDialog(
                 val roomName = input.text.toString()
                 if (!TextUtils.isEmpty(roomName)) {
                     listener.onCreateRoomName(roomName) // Use the listener callback here
+                    a.dismiss()
                 } else {
                     Toast.makeText(context, "Room name cannot be empty.", Toast.LENGTH_SHORT).show()
                 }
-                a.dismiss()
             }
             setNegativeButton("Cancel") { dialog, _ ->
                 dialog.cancel()
