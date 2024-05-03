@@ -1,11 +1,7 @@
 package com.codewithkael.webrtcconference.webrtc
 
 import android.content.Context
-import android.content.Intent
-import android.media.projection.MediaProjection
-import android.util.DisplayMetrics
 import android.util.Log
-import android.view.WindowManager
 import com.codewithkael.webrtcconference.utils.MyApplication
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +17,6 @@ import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
-import org.webrtc.ScreenCapturerAndroid
 import org.webrtc.SurfaceTextureHelper
 import org.webrtc.SurfaceViewRenderer
 import org.webrtc.VideoCapturer
@@ -38,17 +33,12 @@ class WebRTCFactory @Inject constructor(
 
     private lateinit var localStreamListener: LocalStreamListener
     private val eglBaseContext = EglBase.create().eglBaseContext
-    private var permissionIntent: Intent? = null
     private lateinit var localSurfaceView: SurfaceViewRenderer
     private lateinit var rtcAudioManager: RTCAudioManager
 
     private val peerConnectionFactory by lazy { createPeerConnectionFactory() }
 
-    //        private val iceServer = listOf<PeerConnection.IceServer>()
-    private val iceServer = listOf(
-        PeerConnection.IceServer.builder("turn:185.246.66.75:3478").setUsername("user")
-            .setPassword("password").createIceServer(),
-    )
+    private val iceServer = listOf<PeerConnection.IceServer>()
 
 
     private var screenCapturer: VideoCapturer? = null
@@ -89,7 +79,6 @@ class WebRTCFactory @Inject constructor(
             setEnableHardwareScaler(true)
             init(eglBaseContext, null)
         }
-//        startScreenCapturing(view)
         startLocalVideo(view)
     }
 
@@ -154,46 +143,6 @@ class WebRTCFactory @Inject constructor(
         }).createPeerConnectionFactory()
     }
 
-    private fun startScreenCapturing(localSurfaceView: SurfaceViewRenderer) {
-        CoroutineScope(Dispatchers.Default).launch {
-            Log.d("TAG", "startScreenCapturing: called")
-            val displayMetrics = DisplayMetrics()
-            val windowsManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            windowsManager.defaultDisplay.getMetrics(displayMetrics)
-
-            val screenWidthPixels = displayMetrics.widthPixels
-            val screenHeightPixels = displayMetrics.heightPixels
-
-            val surfaceTextureHelper = SurfaceTextureHelper.create(
-                Thread.currentThread().name, eglBaseContext
-            )
-
-            screenCapturer = createScreenCapturer()
-            screenCapturer!!.initialize(
-                surfaceTextureHelper,
-                context,
-                localVideoSource.capturerObserver
-            )
-            screenCapturer!!.startCapture(screenWidthPixels, screenHeightPixels, 10)
-//        screenCapturer!!.startCapture(720, 1080, 10)
-
-            localVideoTrack =
-                peerConnectionFactory.createVideoTrack(localTrackId + "_video", localVideoSource)
-            localVideoTrack?.addSink(localSurfaceView)
-            localStream = peerConnectionFactory.createLocalMediaStream(localStreamId)
-            localStream?.addTrack(localVideoTrack)
-            localStream?.addTrack(localAudioTrack) // Add the audio track to the local stream
-        }
-    }
-
-    private fun createScreenCapturer(): VideoCapturer {
-        return ScreenCapturerAndroid(permissionIntent, object : MediaProjection.Callback() {
-            override fun onStop() {
-                super.onStop()
-                Log.d("TAG", "onStop: stopped screen casting permission")
-            }
-        })
-    }
 
     fun onDestroy() {
         runCatching {

@@ -68,7 +68,7 @@ class MainViewModel @Inject constructor(
         eventSender.createRoom(roomName)
     }
 
-    fun onRoomClicked(roomName: String,view:SurfaceViewRenderer) {
+    fun onRoomJoined(roomName: String, view:SurfaceViewRenderer) {
         callService.initializeSurface(view)
         eventSender.joinRoom(roomName)
     }

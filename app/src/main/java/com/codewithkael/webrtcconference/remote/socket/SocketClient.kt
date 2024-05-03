@@ -37,7 +37,7 @@ class SocketClient @Inject constructor(
             initSocket()
         }
     }
-    fun initSocket() {
+    private fun initSocket() {
         //if you are using android emulator your local websocket address is going to be "ws://10.0.2.2:3000"
         //if you are using your phone as emulator your local address, use cmd and then write ipconfig
         // and get your ethernet ipv4 , mine is : "ws://192.168.1.3:3000"

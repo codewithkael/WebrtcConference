@@ -38,7 +38,7 @@ fun ConferenceScreen(
         SurfaceViewRendererComposable(
             modifier = streamModifier,
             streamName = "Local",
-            onSurfaceReady = { mainViewModel.onRoomClicked(roomId!!, it) }
+            onSurfaceReady = { mainViewModel.onRoomJoined(roomId!!, it) }
         )
 
         // Render each remote stream

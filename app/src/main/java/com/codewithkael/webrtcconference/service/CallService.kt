@@ -32,7 +32,11 @@ import com.codewithkael.webrtcconference.webrtc.WebRTCSignalListener
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.webrtc.IceCandidate
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
@@ -206,7 +210,10 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
         }, targetName, this).also {
             it?.let {
                 connections[targetName] = it
-                done(it)
+                CoroutineScope(Dispatchers.IO).launch {
+                    delay(1000)
+                    done(it)
+                }
             }
         }
     }
