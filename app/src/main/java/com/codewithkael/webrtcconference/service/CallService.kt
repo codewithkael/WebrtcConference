@@ -8,7 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import android.util.Log
+
 import androidx.core.app.NotificationCompat
 import com.codewithkael.webrtcconference.MainActivity
 import com.codewithkael.webrtcconference.R
@@ -81,7 +81,6 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
     fun removeMediaStreamFromState(username: String) {
         val updatedData = HashMap(getMediaStreams()).apply {
             remove(username)
-            Log.d("TAG", "removeMediaStreamFromState: ${mediaStreamsState.value}")
         }
         // Update the state with the new HashMap
         mediaStreamsState.value = updatedData
@@ -142,7 +141,6 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
     }
 
     override fun onNewMessage(message: MessageModel) {
-        Log.d("TAG", "onNewMessage: $message")
         when (message.type) {
             RoomStatus -> handleRoomStatus(message)
             NewSession -> handleNewSession(message)
@@ -189,7 +187,6 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
             }
 
             override fun onAddStream(p0: MediaStream?) {
-                Log.d("TAG", "target = $targetName onAddStream: $p0")
                 super.onAddStream(p0)
                 p0?.let {
                     addMediaStreamToState(targetName, it)
@@ -198,7 +195,6 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
 
             override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
                 super.onConnectionChange(newState)
-                Log.d("TAG", "onConnectionChange: $newState")
                 if (
                     newState == PeerConnection.PeerConnectionState.CLOSED ||
                     newState == PeerConnection.PeerConnectionState.DISCONNECTED ||
@@ -245,10 +241,8 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
         val ice = runCatching {
             gson.fromJson(message.data.toString(), IceCandidate::class.java)
         }
-        Log.d("TAG", "handleIceCandidates: $ice")
         ice.onSuccess {
             findClient(message.name!!).apply {
-                Log.d("TAG", "handleIceCandidates: $this")
                 this?.addIceCandidateToPeer(it)
             }
         }
@@ -354,7 +348,6 @@ class CallService : Service(), SocketEventListener, WebRTCSignalListener {
     }
 
     override fun onTransferEventToSocket(data: MessageModel) {
-        Log.d("TAG", "onTransferEventToSocket: $data")
         socketClient.sendMessageToSocket(data)
     }
 

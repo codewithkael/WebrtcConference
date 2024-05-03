@@ -1,6 +1,5 @@
 package com.codewithkael.webrtcconference.webrtc
 
-import android.util.Log
 import com.codewithkael.webrtcconference.remote.socket.MessageModel
 import com.codewithkael.webrtcconference.remote.socket.SocketEvents
 import com.google.gson.Gson
@@ -11,11 +10,11 @@ import org.webrtc.SessionDescription
 
 class RTCClientImpl(
     private val connection: PeerConnection,
-    private val username:String,
+    private val username: String,
     private val target: String,
     private val gson: Gson,
     private var listener: WebRTCSignalListener? = null,
-    private val destroyClient:()->Unit
+    private val destroyClient: () -> Unit
 ) : RTCClient {
 
     private val mediaConstraint = MediaConstraints().apply {
@@ -27,14 +26,13 @@ class RTCClientImpl(
     override fun call() {
         peerConnection.createOffer(object : MySdpObserver() {
             override fun onCreateSuccess(desc: SessionDescription?) {
-                Log.d("TAG", "onCreateSuccess: ${desc?.description}")
                 super.onCreateSuccess(desc)
                 peerConnection.setLocalDescription(object : MySdpObserver() {
                     override fun onSetSuccess() {
                         super.onSetSuccess()
                         listener?.onTransferEventToSocket(
                             MessageModel(
-                                type = SocketEvents.Offer, name = username, target =  target,
+                                type = SocketEvents.Offer, name = username, target = target,
                                 data = desc?.description
                             )
                         )
@@ -54,7 +52,7 @@ class RTCClientImpl(
                         listener?.onTransferEventToSocket(
                             MessageModel(
                                 type = SocketEvents.Answer,
-                                name  = username,
+                                name = username,
                                 target = target,
                                 data = desc?.description
                             )
@@ -78,7 +76,7 @@ class RTCClientImpl(
         listener?.onTransferEventToSocket(
             MessageModel(
                 type = SocketEvents.Ice,
-                name  = username,
+                name = username,
                 target = target,
                 data = gson.toJson(candidate)
             )

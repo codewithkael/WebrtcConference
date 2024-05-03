@@ -2,7 +2,7 @@ package com.codewithkael.webrtcconference.ui.screens
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.util.Log
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
@@ -42,16 +42,13 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
         override fun onCreateRoomName(roomName: String) {
             mainViewModel.onCreateRoomClicked(roomName)
             navController.navigate(conferenceScreen(roomName))
-            Log.d("TAG", "onCreateRoomName: $roomName")
         }
     })
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        Log.d("TAG", "HomeScreen: $permissions")
         // All permissions are granted
         if (permissions.all { it.value }) {
-            //todo move permissions to authentication page later
             mainViewModel.init()
         }
     }
@@ -80,7 +77,6 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel) {
             Text(text = "Create Room")
         }
         roomState.value?.let { roomList ->
-            Log.d("TAG", "HomeScreen: list here $roomList")
             LazyColumn(Modifier.weight(15f)) {
                 items(items = roomList) { item ->
                     Row(

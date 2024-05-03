@@ -11,7 +11,7 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\admin\.android\avd\Medium_Phone_API_34.avd" />
+                  <value value="C:\Users\Kael\.android\avd\Pixel_2_API_27.avd" />
                 </Key>
               </deviceKey>
             </Target>
@@ -20,7 +20,7 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\admin\.android\avd\Copy_of_Medium_Phone_API_34.avd" />
+                  <value value="C:\Users\Kael\.android\avd\Copy_of_Child.avd" />
                 </Key>
               </deviceKey>
             </Target>
