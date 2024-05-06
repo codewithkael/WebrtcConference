@@ -2,12 +2,13 @@
 
 Welcome to the GitHub repository for our comprehensive tutorial on creating a video conference application using Jetpack Compose and WebRTC. This course will guide you through building a modern video conference app from scratch, utilizing Jetpack Compose for the UI and WebRTC for real-time video communication. Additionally, you'll implement a signaling server with JavaScript and Node.js to facilitate seamless video conferencing.
 
-## **Watch the Tutorial here**: [www.youtube.com/@codewithkael](https://www.youtube.com/@codewithkael)
+**Watch the Tutorial here:** [www.youtube.com/@codewithkael](https://www.youtube.com/@codewithkael)
 
 ## What You Will Learn
 1. **Jetpack Compose Basics:** Learn the essentials of building UI components with Jetpack Compose.
 2. **Video Conference Implementation:** Develop a feature-rich video conference application using WebRTC.
 3. **Signaling Server:** Create a signaling server with JavaScript and Node.js to manage video conference connections.
+   - **Signaling Server Repo:** [https://github.com/codewithkael/WebrtcConferenceWebServer](https://github.com/codewithkael/WebrtcConferenceWebServer)
 4. **WebRTC Integration:** Step-by-step guide to integrate WebRTC for real-time communication.
 5. **Security Best Practices:** Follow best practices to keep your conference data secure.
 
